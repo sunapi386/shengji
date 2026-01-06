@@ -144,9 +144,10 @@ function MultiplayerContent() {
         <JoinCodeHandler onJoinCode={setJoinCode} />
       </Suspense>
 
-      <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto">
+      <div className="min-h-screen bg-background flex flex-col">
         {/* Header */}
-        <header className="border-b border-border bg-card px-3 py-3 sticky top-0 z-10">
+        <header className="border-b border-border bg-card px-4 py-3 sticky top-0 z-10">
+          <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" className="shrink-0 -ml-2" asChild>
               <Link href="/">
@@ -158,9 +159,11 @@ function MultiplayerContent() {
               <p className="text-xs text-muted-foreground">Play with friends or AI</p>
             </div>
           </div>
+          </div>
         </header>
 
         <main className="flex-1 overflow-auto">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="w-full">
             <TabsList className="w-full justify-start rounded-none border-b h-auto p-0 bg-transparent">
               {[
@@ -382,6 +385,7 @@ function MultiplayerContent() {
               </Card>
             </TabsContent>
           </Tabs>
+          </div>
         </main>
       </div>
     </>
