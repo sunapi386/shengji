@@ -21,15 +21,9 @@ export default async function DrillLayout({ params, children }: DrillLayoutProps
   }
 
   return (
-    <div className="container py-8">
-      <div className="space-y-4">
-        
-        
-        {/* Placeholder for game info, drill layout, etc. */}
-        <div className="border rounded-lg p-4">
-          {/* This is where the DrillPage content will be rendered */}
-          {children}
-        </div>
+    <div className="min-h-screen bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {children}
       </div>
     </div>
   )

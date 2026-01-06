@@ -198,7 +198,7 @@ export default function RolesTutorialPage() {
   const isLastLesson = currentLesson === lessons.length - 1
 
   return (
-    <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto">
+    <div className="min-h-screen bg-background flex flex-col max-w-4xl mx-auto">
       <header className="border-b border-border bg-card px-3 py-3 sticky top-0 z-10">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" className="shrink-0 -ml-2" asChild>
@@ -249,7 +249,7 @@ export default function RolesTutorialPage() {
         {lesson.content}
       </main>
 
-      <footer className="fixed bottom-0 left-0 right-0 border-t border-border bg-card px-4 py-3 safe-area-bottom max-w-lg mx-auto">
+      <footer className="fixed bottom-0 left-0 right-0 border-t border-border bg-card px-4 py-3 safe-area-bottom max-w-4xl mx-auto">
         <div className="flex gap-3">
           <Button
             variant="outline"

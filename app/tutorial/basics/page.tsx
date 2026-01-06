@@ -231,9 +231,10 @@ export default function BasicsTutorialPage() {
   const allCompleted = completedLessons.size === lessons.length
 
   return (
-    <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="border-b border-border bg-card px-3 py-3 sticky top-0 z-10">
+      <header className="border-b border-border bg-card px-4 py-3 sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" className="shrink-0 -ml-2" asChild>
             <Link href="/">
@@ -250,10 +251,12 @@ export default function BasicsTutorialPage() {
             </div>
           </div>
         </div>
+        </div>
       </header>
 
       {/* Lesson Navigation - Horizontal scroll */}
-      <div className="border-b border-border bg-card px-3 py-2 overflow-x-auto scrollbar-hide">
+      <div className="border-b border-border bg-card">
+        <div className="max-w-4xl mx-auto px-4 py-2 overflow-x-auto scrollbar-hide">
         <div className="flex gap-2 min-w-max">
           {lessons.map((l, i) => (
             <button
@@ -272,10 +275,12 @@ export default function BasicsTutorialPage() {
             </button>
           ))}
         </div>
+        </div>
       </div>
 
       {/* Lesson Content */}
-      <main className="flex-1 overflow-auto p-4 pb-24">
+      <main className="flex-1 overflow-auto pb-24">
+        <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="mb-4">
           <Badge variant="secondary" className="mb-2 text-xs">
             Lesson {currentLesson + 1}
@@ -283,10 +288,12 @@ export default function BasicsTutorialPage() {
           <h2 className="text-lg font-bold">{lesson.title}</h2>
         </div>
         {lesson.content}
+        </div>
       </main>
 
       {/* Navigation Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 border-t border-border bg-card px-4 py-3 safe-area-bottom max-w-lg mx-auto">
+      <footer className="fixed bottom-0 left-0 right-0 border-t border-border bg-card safe-area-bottom">
+        <div className="max-w-4xl mx-auto px-4 py-3">
         <div className="flex gap-3">
           <Button
             variant="outline"
@@ -311,6 +318,7 @@ export default function BasicsTutorialPage() {
               <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           )}
+        </div>
         </div>
       </footer>
     </div>

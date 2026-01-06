@@ -104,8 +104,10 @@ export default function HomePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto">
+    <div className="min-h-screen bg-background flex flex-col">
       <main className="flex-1 overflow-auto pb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
         {activeTab === "home" && (
           <div className="p-4 space-y-4">
             {/* Compact Header */}
@@ -345,10 +347,13 @@ export default function HomePage() {
             )}
           </div>
         )}
+          </div>
+        </div>
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border safe-area-bottom max-w-lg mx-auto">
+      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border safe-area-bottom">
+        <div className="max-w-4xl mx-auto">
         <div className="flex">
           {[
             { key: "home" as TabType, label: "Home", icon: Home },
@@ -370,6 +375,7 @@ export default function HomePage() {
               </button>
             )
           })}
+        </div>
         </div>
       </nav>
     </div>
