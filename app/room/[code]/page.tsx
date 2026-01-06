@@ -205,53 +205,65 @@ export default function RoomPage({ params }: RoomPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="border-b border-border bg-card px-3 py-3 sticky top-0 z-10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="shrink-0 -ml-2" asChild>
+      <header className="border-b border-border bg-card px-4 py-2 sticky top-0 z-10">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="shrink-0" asChild>
               <Link href="/multiplayer">
                 <ArrowLeft className="w-5 h-5" />
               </Link>
             </Button>
-            <div>
-              <h1 className="text-sm font-semibold">Room {room.code}</h1>
-              <p className="text-xs text-muted-foreground">
-                {room.players.length}/{room.maxPlayers} players
-              </p>
+            <div className="flex items-center gap-4">
+              <div>
+                <h1 className="text-sm font-semibold">Room {room.code}</h1>
+                <p className="text-xs text-muted-foreground">
+                  {room.players.length}/{room.maxPlayers} players
+                </p>
+              </div>
+              {room.status === "PLAYING" && room.gameState && (
+                <Badge variant="outline" className="text-xs">
+                  {room.gameState.phase}
+                </Badge>
+              )}
             </div>
           </div>
-          <div className="flex gap-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCopyCode}>
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCopyCode}>
-              <Share2 className="w-4 h-4" />
-            </Button>
-          </div>
+          {room.status === "WAITING" && (
+            <div className="flex gap-2">
+              <Button variant="ghost" size="sm" onClick={handleCopyCode}>
+                {copied ? <Check className="w-4 h-4 mr-1" /> : <Copy className="w-4 h-4 mr-1" />}
+                <span className="hidden sm:inline">Copy Invite</span>
+              </Button>
+            </div>
+          )}
         </div>
       </header>
 
-      <main className="flex-1 overflow-auto p-4 space-y-4">
-        {/* Room Code Display */}
-        <Card className="bg-primary/5 border-primary/20">
-          <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground mb-1">Share this code to invite players</p>
-            <div className="text-3xl font-mono font-bold tracking-widest text-primary">{room.code}</div>
-            <Button variant="outline" size="sm" className="mt-3 bg-transparent" onClick={handleCopyCode}>
-              {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
-              Copy Invite Link
-            </Button>
-          </CardContent>
-        </Card>
+      <main className="flex-1 overflow-auto">
+        <div className={room.status === "PLAYING" ? "max-w-7xl mx-auto p-6" : "max-w-lg mx-auto p-4"}>
+          <div className="space-y-4">
+            {/* Room Code Display - Only show when waiting */}
+            {room.status === "WAITING" && (
+              <Card className="bg-primary/5 border-primary/20">
+                <CardContent className="p-4 text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Share this code to invite players</p>
+                  <div className="text-3xl font-mono font-bold tracking-widest text-primary">{room.code}</div>
+                  <Button variant="outline" size="sm" className="mt-3 bg-transparent" onClick={handleCopyCode}>
+                    {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
+                    Copy Invite Link
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
-        {/* Players Grid */}
-        <div>
-          <h2 className="font-semibold mb-3 flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            Players
-          </h2>
+            {/* Players Grid - Only show when waiting */}
+            {room.status === "WAITING" && (
+              <div>
+                <h2 className="font-semibold mb-3 flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Players
+                </h2>
           <div className="grid grid-cols-2 gap-2">
             {positions.map((position) => {
               const player = room.players.find((p) => p.position === position)
@@ -320,87 +332,85 @@ export default function RoomPage({ params }: RoomPageProps) {
               )
             })}
           </div>
-        </div>
-
-        {/* Game Settings (Host Only) */}
-        {isHost && room.status === "WAITING" && (
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="font-medium text-sm mb-3 flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                Game Settings
-              </h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Max Players</span>
-                  <Badge variant="secondary">{room.maxPlayers}</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Starting Rank</span>
-                  <Badge variant="secondary">2</Badge>
-                </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Status Messages */}
-        {!currentPlayer && (
-          <Card className="bg-amber-500/10 border-amber-500/20">
-            <CardContent className="p-4 text-center">
-              <p className="text-sm text-amber-700">You are not in this room</p>
-              <Button variant="outline" size="sm" className="mt-2 bg-transparent" asChild>
-                <Link href={`/multiplayer?join=${room.code}`}>Join Room</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {room.status === "PLAYING" && room.gameState && (
-          <>
-            {room.gameState.phase === "DECLARING" && (
-              <DeclaringPhase
-                room={room}
-                playerId={playerId}
-                onDeclare={handleDeclare}
-                onPass={handlePass}
-              />
             )}
 
-            {room.gameState.phase === "BURYING" && (
-              <BuryingPhase
-                room={room}
-                playerId={playerId}
-                onBury={handleBury}
-              />
+            {/* Game Settings (Host Only) */}
+            {isHost && room.status === "WAITING" && (
+              <Card>
+                <CardContent className="p-4">
+                  <h3 className="font-medium text-sm mb-3 flex items-center gap-2">
+                    <Settings className="w-4 h-4" />
+                    Game Settings
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Max Players</span>
+                      <Badge variant="secondary">{room.maxPlayers}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Starting Rank</span>
+                      <Badge variant="secondary">2</Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             )}
 
-            {room.gameState.phase === "PLAYING" && (
-              <PlayingPhase
-                room={room}
-                playerId={playerId}
-                onPlayCard={handlePlayCard}
-              />
+            {/* Status Messages */}
+            {!currentPlayer && (
+              <Card className="bg-amber-500/10 border-amber-500/20">
+                <CardContent className="p-4 text-center">
+                  <p className="text-sm text-amber-700">You are not in this room</p>
+                  <Button variant="outline" size="sm" className="mt-2 bg-transparent" asChild>
+                    <Link href={`/multiplayer?join=${room.code}`}>Join Room</Link>
+                  </Button>
+                </CardContent>
+              </Card>
             )}
 
-            {room.gameState.phase === "SCORING" && (
-              <ScoringPhase
-                room={room}
-                result={calculateFinalScore(room)}
-                onPlayAgain={handlePlayAgain}
-              />
+            {/* Game Phases */}
+            {room.status === "PLAYING" && room.gameState && (
+              <>
+                {room.gameState.phase === "DECLARING" && (
+                  <DeclaringPhase
+                    room={room}
+                    playerId={playerId}
+                    onDeclare={handleDeclare}
+                    onPass={handlePass}
+                  />
+                )}
+
+                {room.gameState.phase === "BURYING" && (
+                  <BuryingPhase room={room} playerId={playerId} onBury={handleBury} />
+                )}
+
+                {room.gameState.phase === "PLAYING" && (
+                  <PlayingPhase room={room} playerId={playerId} onPlayCard={handlePlayCard} />
+                )}
+
+                {room.gameState.phase === "SCORING" && (
+                  <ScoringPhase
+                    room={room}
+                    result={calculateFinalScore(room)}
+                    onPlayAgain={handlePlayAgain}
+                  />
+                )}
+              </>
             )}
-          </>
-        )}
+          </div>
+        </div>
       </main>
 
       {/* Start Game Button (Host Only) */}
       {isHost && room.status === "WAITING" && (
         <div className="p-4 border-t border-border bg-card safe-area-bottom">
-          <Button className="w-full" size="lg" onClick={handleStartGame} disabled={room.players.length < 4}>
-            <Play className="w-5 h-5 mr-2" />
-            Start Game ({room.players.length}/4 minimum)
-          </Button>
+          <div className="max-w-lg mx-auto">
+            <Button className="w-full" size="lg" onClick={handleStartGame} disabled={room.players.length < 4}>
+              <Play className="w-5 h-5 mr-2" />
+              Start Game ({room.players.length}/4 minimum)
+            </Button>
+          </div>
         </div>
       )}
     </div>
