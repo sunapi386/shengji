@@ -21,7 +21,18 @@ import {
 } from "lucide-react"
 import { getRoomByCode, getOrCreatePlayerId, addAIPlayer, removePlayer, updateRoom, type Room } from "@/lib/room-store"
 import type { PlayerPosition } from "@/lib/room-types"
+import type { CardString } from "@/lib/card-types"
 import { useToast } from "@/hooks/use-toast"
+import { initializeGame } from "@/lib/game-engine"
+import { attemptDeclare, passDeclaring } from "@/lib/game-phases/declaring"
+import { buryCards } from "@/lib/game-phases/burying"
+import { playCard } from "@/lib/game-phases/playing"
+import { calculateFinalScore, setupNextGame } from "@/lib/game-phases/scoring"
+import { shouldAIAct, executeAITurn } from "@/lib/ai-controller"
+import { DeclaringPhase } from "@/components/game-phases/declaring-phase"
+import { BuryingPhase } from "@/components/game-phases/burying-phase"
+import { PlayingPhase } from "@/components/game-phases/playing-phase"
+import { ScoringPhase } from "@/components/game-phases/scoring-phase"
 
 interface RoomPageProps {
   params: Promise<{ code: string }>
@@ -43,10 +54,25 @@ export default function RoomPage({ params }: RoomPageProps) {
 
   useEffect(() => {
     loadRoom()
-    // Poll for updates (in real app, use WebSocket)
-    const interval = setInterval(loadRoom, 2000)
+
+    // AI turn handler
+    const handleAITurn = async () => {
+      const currentRoom = getRoomByCode(code)
+      if (currentRoom && shouldAIAct(currentRoom)) {
+        const updatedRoom = await executeAITurn(currentRoom)
+        updateRoom(updatedRoom)
+        setRoom(updatedRoom)
+      }
+    }
+
+    handleAITurn() // Check immediately
+    const interval = setInterval(() => {
+      loadRoom()
+      handleAITurn()
+    }, 2000)
+
     return () => clearInterval(interval)
-  }, [loadRoom])
+  }, [loadRoom, code])
 
   const handleCopyCode = async () => {
     if (!room) return
@@ -80,10 +106,71 @@ export default function RoomPage({ params }: RoomPageProps) {
       return
     }
 
-    const updatedRoom = { ...room, status: "PLAYING" as const }
+    const updatedRoom = initializeGame(room)
     updateRoom(updatedRoom)
     setRoom(updatedRoom)
     toast({ title: "Game Started!", description: "Good luck!" })
+  }
+
+  // Phase-specific handlers
+  const handleDeclare = (cards: CardString[]) => {
+    if (!room) return
+    const result = attemptDeclare(room, playerId, cards)
+    if (result.success) {
+      updateRoom(result.room)
+      setRoom(result.room)
+      toast({ title: "Success", description: result.message })
+    } else {
+      toast({ title: "Error", description: result.message, variant: "destructive" })
+    }
+  }
+
+  const handlePass = () => {
+    if (!room) return
+    const result = passDeclaring(room, playerId)
+    if (result.success) {
+      updateRoom(result.room)
+      setRoom(result.room)
+    } else {
+      toast({ title: "Error", description: result.message, variant: "destructive" })
+    }
+  }
+
+  const handleBury = (cards: CardString[]) => {
+    if (!room) return
+    const result = buryCards(room, playerId, cards)
+    if (result.success) {
+      updateRoom(result.room)
+      setRoom(result.room)
+      toast({ title: "Success", description: result.message })
+    } else {
+      toast({ title: "Error", description: result.message, variant: "destructive" })
+    }
+  }
+
+  const handlePlayCard = (card: CardString) => {
+    if (!room) return
+    const result = playCard(room, playerId, card)
+    if (result.success) {
+      updateRoom(result.room)
+      setRoom(result.room)
+      if (result.trickComplete) {
+        toast({ title: "Trick Complete", description: result.message })
+      }
+    } else {
+      toast({ title: "Error", description: result.message, variant: "destructive" })
+    }
+  }
+
+  const handlePlayAgain = () => {
+    if (!room || !isHost) return
+    const result = calculateFinalScore(room)
+    if (result) {
+      const nextRoom = setupNextGame(room, result)
+      updateRoom(nextRoom)
+      setRoom(nextRoom)
+      toast({ title: "Game Reset", description: "Ready for next game!" })
+    }
   }
 
   const isHost = room?.hostId === playerId
@@ -269,13 +356,41 @@ export default function RoomPage({ params }: RoomPageProps) {
           </Card>
         )}
 
-        {room.status === "PLAYING" && (
-          <Card className="bg-green-500/10 border-green-500/20">
-            <CardContent className="p-4 text-center">
-              <p className="text-sm text-green-700 font-medium">Game in Progress!</p>
-              <p className="text-xs text-muted-foreground mt-1">Full game implementation coming soon...</p>
-            </CardContent>
-          </Card>
+        {room.status === "PLAYING" && room.gameState && (
+          <>
+            {room.gameState.phase === "DECLARING" && (
+              <DeclaringPhase
+                room={room}
+                playerId={playerId}
+                onDeclare={handleDeclare}
+                onPass={handlePass}
+              />
+            )}
+
+            {room.gameState.phase === "BURYING" && (
+              <BuryingPhase
+                room={room}
+                playerId={playerId}
+                onBury={handleBury}
+              />
+            )}
+
+            {room.gameState.phase === "PLAYING" && (
+              <PlayingPhase
+                room={room}
+                playerId={playerId}
+                onPlayCard={handlePlayCard}
+              />
+            )}
+
+            {room.gameState.phase === "SCORING" && (
+              <ScoringPhase
+                room={room}
+                result={calculateFinalScore(room)}
+                onPlayAgain={handlePlayAgain}
+              />
+            )}
+          </>
         )}
       </main>
 

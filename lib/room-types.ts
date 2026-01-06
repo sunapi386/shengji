@@ -22,6 +22,13 @@ export interface GameTrick {
   pointsWon: number
 }
 
+export interface TrumpDeclaration {
+  player: PlayerPosition
+  cards: CardString[]
+  suit: Suit
+  count: number
+}
+
 export interface RoomGameState {
   trumpSuit: Suit | null
   trumpRank: string | null
@@ -31,6 +38,14 @@ export interface RoomGameState {
   defenderPoints: number
   turnToPlay: PlayerPosition | null
   phase: "DECLARING" | "BURYING" | "PLAYING" | "SCORING"
+  dealer: PlayerPosition
+  declaringPlayer: PlayerPosition | null
+  bottomDeck: CardString[]
+  trumpDeclarations: TrumpDeclaration[]
+  buriedCards: CardString[]
+  lastTrickWinner: PlayerPosition | null
+  currentRound: number
+  pointsThreshold: number
 }
 
 export interface Room {
