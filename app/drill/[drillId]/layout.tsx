@@ -2,7 +2,7 @@ import { allDrills } from "@/lib/scenario-data"
 import type { ReactNode } from "react"
 
 interface DrillLayoutProps {
-  params: { drillId: string }
+  params: Promise<{ drillId: string }>
   children: ReactNode
 }
 
@@ -12,8 +12,9 @@ export async function generateStaticParams() {
   }))
 }
 
-export default function DrillLayout({ params, children }: DrillLayoutProps) {
-  const drill = allDrills[params.drillId]
+export default async function DrillLayout({ params, children }: DrillLayoutProps) {
+  const { drillId } = await params
+  const drill = allDrills[drillId]
 
   if (!drill) {
     return null
